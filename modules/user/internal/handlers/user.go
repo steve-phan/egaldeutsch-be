@@ -5,17 +5,18 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 
-	"egaldeutsch-be/internal/models"
-	"egaldeutsch-be/internal/services"
+	"egaldeutsch-be/modules/user/internal/models"
+	"egaldeutsch-be/modules/user/internal/services"
 )
 
+// UserHandler handles HTTP requests for users
 type UserHandler struct {
 	userService *services.UserService
 }
 
+// NewUserHandler creates a new user handler
 func NewUserHandler(userService *services.UserService) *UserHandler {
 	return &UserHandler{userService: userService}
 }
@@ -48,8 +49,12 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 
 	user, err := h.userService.GetUserByID(params.ID)
 	if err != nil {
-		logrus.WithError(err).WithField("user_id", params.ID).Error("Failed to get user")
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		if err.Error() == "user not found" {
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			return
+		}
+		logrus.WithError(err).Error("Failed to get user")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user"})
 		return
 	}
 
@@ -58,38 +63,27 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 
 // UpdateUser handles PUT /api/v1/users/:id
 func (h *UserHandler) UpdateUser(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+	var params models.UserIDParam
+	if err := c.ShouldBindUri(&params); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	var req models.UpdateUserRequest
-
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Get existing user
-	user, err := h.userService.GetUserByID(id.String())
+	user, err := h.userService.UpdateUser(params.ID, &req)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
-		return
-	}
-
-	// Update fields
-	if req.Name != "" {
-		user.Name = req.Name
-	}
-	if req.Role != "" {
-		err = h.userService.UpdateUserRole(id.String(), req.Role)
-		if err != nil {
-			logrus.WithError(err).Error("Failed to update user role")
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+		if err.Error() == "user not found" {
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 			return
 		}
+		logrus.WithError(err).Error("Failed to update user")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+		return
 	}
 
 	c.JSON(http.StatusOK, user)
@@ -97,22 +91,26 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 
 // DeleteUser handles DELETE /api/v1/users/:id
 func (h *UserHandler) DeleteUser(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+	var params models.UserIDParam
+	if err := c.ShouldBindUri(&params); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	err = h.userService.DeleteUser(id.String())
-	if err != nil {
-		logrus.WithError(err).WithField("user_id", id).Error("Failed to delete user")
+	if err := h.userService.DeleteUser(params.ID); err != nil {
+		if err.Error() == "user not found" {
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			return
+		}
+		logrus.WithError(err).Error("Failed to delete user")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+	c.JSON(http.StatusNoContent, nil)
 }
+
+// ListUsers handles GET /api/v1/users
 func (h *UserHandler) ListUsers(c *gin.Context) {
 	page := 1
 	perPage := 10
@@ -129,17 +127,20 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 		}
 	}
 
-	users, err := h.userService.GetUsersByRole("", perPage, (page-1)*perPage) // Empty role means all users
+	users, total, err := h.userService.ListUsers(page, perPage)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to list users")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve users"})
 		return
 	}
 
-	// For now, return simple response. You can add total count later
+	totalPages := (int(total) + perPage - 1) / perPage
+
 	c.JSON(http.StatusOK, gin.H{
-		"users":    users,
-		"page":     page,
-		"per_page": perPage,
+		"items":       users,
+		"page":        page,
+		"per_page":    perPage,
+		"total_items": total,
+		"total_pages": totalPages,
 	})
 }

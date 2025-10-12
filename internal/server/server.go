@@ -9,11 +9,8 @@ import (
 
 	"egaldeutsch-be/internal/config"
 	"egaldeutsch-be/internal/database"
-	"egaldeutsch-be/internal/handlers"
 	"egaldeutsch-be/internal/middleware"
-	"egaldeutsch-be/internal/models"
-	"egaldeutsch-be/internal/repositories"
-	"egaldeutsch-be/internal/services"
+	"egaldeutsch-be/modules/user"
 )
 
 type Server struct {
@@ -35,19 +32,16 @@ func NewServer(cfg *config.Config) *Server {
 		logrus.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	// Auto-migrate models
-	if err := db.AutoMigrate(&models.User{}); err != nil {
+	// Initialize user module
+	userModule := user.NewModule(db.DB)
+
+	// Auto-migrate models from all modules
+	modelsToMigrate := userModule.GetModelsForMigration()
+	// Add other modules here as they are implemented
+
+	if err := db.AutoMigrate(modelsToMigrate...); err != nil {
 		logrus.Fatalf("Failed to migrate database: %v", err)
 	}
-
-	// Initialize repositories
-	userRepo := repositories.NewUserRepository(db.DB)
-
-	// Initialize services
-	userService := services.NewUserService(userRepo)
-
-	// Initialize handlers
-	userHandler := handlers.NewUserHandler(userService)
 
 	// Create router
 	router := gin.New()
@@ -71,11 +65,11 @@ func NewServer(cfg *config.Config) *Server {
 		// User routes
 		users := api.Group("/users")
 		{
-			users.POST("", userHandler.CreateUser)
-			users.GET("/:id", userHandler.GetUser)
-			users.PUT("/:id", userHandler.UpdateUser)
-			users.DELETE("/:id", userHandler.DeleteUser)
-			users.GET("", userHandler.ListUsers)
+			users.POST("", userModule.Handler.CreateUser)
+			users.GET("/:id", userModule.Handler.GetUser)
+			users.PUT("/:id", userModule.Handler.UpdateUser)
+			users.DELETE("/:id", userModule.Handler.DeleteUser)
+			users.GET("", userModule.Handler.ListUsers)
 		}
 
 		// Article routes (TODO: Update to use services)
