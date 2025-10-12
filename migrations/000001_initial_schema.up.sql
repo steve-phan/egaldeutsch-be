@@ -1,0 +1,51 @@
+-- -- Create users table
+-- CREATE TABLE IF NOT EXISTS users (
+--     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--     name VARCHAR(255) NOT NULL,
+--     role VARCHAR(50) NOT NULL CHECK (role IN ('learner', 'teacher')),
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+--     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- );
+
+-- -- Create articles table
+-- CREATE TABLE IF NOT EXISTS articles (
+--     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--     title VARCHAR(500) NOT NULL,
+--     summary TEXT NOT NULL,
+--     content TEXT NOT NULL,
+--     level VARCHAR(10) NOT NULL CHECK (level IN ('A1', 'A2', 'B1', 'B2', 'C1')),
+--     author_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+--     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- );
+
+-- -- Create quizzes table
+-- CREATE TABLE IF NOT EXISTS quizzes (
+--     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--     title VARCHAR(500) NOT NULL,
+--     article_id UUID NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- );
+
+-- -- Create quiz_questions table
+-- CREATE TABLE IF NOT EXISTS quiz_questions (
+--     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--     quiz_id UUID NOT NULL REFERENCES quizzes(id) ON DELETE CASCADE,
+--     prompt TEXT NOT NULL,
+--     options JSONB NOT NULL, -- Array of strings
+--     answer INTEGER NOT NULL, -- Index of correct answer
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- );
+
+-- -- Create indexes for better performance
+-- CREATE INDEX IF NOT EXISTS idx_articles_author_id ON articles(author_id);
+-- CREATE INDEX IF NOT EXISTS idx_articles_level ON articles(level);
+-- CREATE INDEX IF NOT EXISTS idx_articles_created_at ON articles(created_at DESC);
+-- CREATE INDEX IF NOT EXISTS idx_quizzes_article_id ON quizzes(article_id);
+-- CREATE INDEX IF NOT EXISTS idx_quiz_questions_quiz_id ON quiz_questions(quiz_id);
+
+-- -- Insert some sample users
+-- INSERT INTO users (id, name, role) VALUES
+--     ('550e8400-e29b-41d4-a716-446655440000', 'Lea Schneider', 'teacher'),
+--     ('550e8400-e29b-41d4-a716-446655440001', 'Jonas Bauer', 'learner')
+-- ON CONFLICT (id) DO NOTHING;

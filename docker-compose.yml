@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: egaldeutsch-postgres
+    environment:
+      POSTGRES_DB: egaldeutsch
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: egaldeutsch-app
+    ports:
+      - "8080:8080"
+    environment:
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 8080
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: egaldeutsch
+      DB_SSLMODE: disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/vendor
+    command: go run ./cmd/server
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+        - action: rebuild
+          path: go.mod
+        - action: rebuild
+          path: go.sum
+
+volumes:
+  postgres_data:

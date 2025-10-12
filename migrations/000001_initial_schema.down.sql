@@ -1,0 +1,5 @@
+-- -- Drop tables in reverse order due to foreign key constraints
+-- DROP TABLE IF EXISTS quiz_questions;
+-- DROP TABLE IF EXISTS quizzes;
+-- DROP TABLE IF EXISTS articles;
+-- DROP TABLE IF EXISTS users;
