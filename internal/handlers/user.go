@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 
+	"egaldeutsch-be/internal/models"
 	"egaldeutsch-be/internal/services"
 )
 
@@ -21,11 +22,7 @@ func NewUserHandler(userService *services.UserService) *UserHandler {
 
 // CreateUser handles POST /api/v1/users
 func (h *UserHandler) CreateUser(c *gin.Context) {
-	var req struct {
-		Name string `json:"name" binding:"required"`
-		Role string `json:"role" binding:"required,oneof=admin user"`
-	}
-
+	var req models.CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -43,16 +40,15 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 
 // GetUser handles GET /api/v1/users/:id
 func (h *UserHandler) GetUser(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+	var params models.UserIDParam
+	if err := c.ShouldBindUri(&params); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	user, err := h.userService.GetUserByID(id.String())
+	user, err := h.userService.GetUserByID(params.ID)
 	if err != nil {
-		logrus.WithError(err).WithField("user_id", id).Error("Failed to get user")
+		logrus.WithError(err).WithField("user_id", params.ID).Error("Failed to get user")
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
@@ -69,10 +65,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	var req struct {
-		Name string `json:"name"`
-		Role string `json:"role" binding:"omitempty,oneof=admin user"`
-	}
+	var req models.UpdateUserRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
