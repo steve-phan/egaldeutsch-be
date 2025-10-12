@@ -11,6 +11,9 @@ import (
 	"egaldeutsch-be/internal/database"
 	"egaldeutsch-be/internal/handlers"
 	"egaldeutsch-be/internal/middleware"
+	"egaldeutsch-be/internal/models"
+	"egaldeutsch-be/internal/repositories"
+	"egaldeutsch-be/internal/services"
 )
 
 type Server struct {
@@ -32,8 +35,19 @@ func NewServer(cfg *config.Config) *Server {
 		logrus.Fatalf("Failed to connect to database: %v", err)
 	}
 
+	// Auto-migrate models
+	if err := db.AutoMigrate(&models.User{}); err != nil {
+		logrus.Fatalf("Failed to migrate database: %v", err)
+	}
+
+	// Initialize repositories
+	userRepo := repositories.NewUserRepository(db.DB)
+
+	// Initialize services
+	userService := services.NewUserService(userRepo)
+
 	// Initialize handlers
-	articleHandler := handlers.NewArticleHandler(db)
+	userHandler := handlers.NewUserHandler(userService)
 
 	// Create router
 	router := gin.New()
@@ -54,10 +68,18 @@ func NewServer(cfg *config.Config) *Server {
 	// API routes
 	api := router.Group("/api/v1")
 	{
-		api.GET("/articles", articleHandler.GetArticles)
+		// User routes
+		users := api.Group("/users")
 		{
-
+			users.POST("", userHandler.CreateUser)
+			users.GET("/:id", userHandler.GetUser)
+			users.PUT("/:id", userHandler.UpdateUser)
+			users.DELETE("/:id", userHandler.DeleteUser)
+			users.GET("", userHandler.ListUsers)
 		}
+
+		// Article routes (TODO: Update to use services)
+		// api.GET("/articles", articleHandler.GetArticles)
 	}
 
 	return &Server{

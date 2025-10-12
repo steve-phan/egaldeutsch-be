@@ -168,7 +168,7 @@ make migrate-create name=your_migration_name
 
 - `id` (UUID) - Primary key
 - `name` (VARCHAR) - User name
-- `role` (VARCHAR) - 'learner' or 'teacher'
+- `role` (VARCHAR) - 'admin' or 'user'
 - `created_at`, `updated_at` (TIMESTAMP)
 
 ### Articles
@@ -231,4 +231,5 @@ docker run -p 8080:8080 \
 ## License
 
 [Add your license here]
+
 # egaldeutsch-be

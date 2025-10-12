@@ -6,13 +6,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// User represents a user in the system
-type User struct {
-	ID   uuid.UUID `gorm:"column:id"`
-	Name string    `gorm:"column:name"`
-	Role string    `gorm:"column:role"` // "admin" or "user"
-}
-
 // QuizQuestion represents a single question in a quiz
 type QuizQuestion struct {
 	ID      uuid.UUID `json:"id" db:"id"`
