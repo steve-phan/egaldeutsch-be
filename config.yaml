@@ -8,3 +8,8 @@ database:
   password: postgres
   dbname: egaldeutsch
   sslmode: disable
+  # PostgreSQL Connection Pool Settings (Production Optimized)
+  max_open_conns: 25 # ~4x CPU cores, adjust based on load
+  max_idle_conns: 10 # Keep some idle connections ready
+  conn_max_lifetime: 300 # 5 minutes - refresh connections
+  conn_max_idle_time: 60 # 1 minute - close idle connections

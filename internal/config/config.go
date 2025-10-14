@@ -23,6 +23,12 @@ type DatabaseConfig struct {
 	Password string `mapstructure:"password"`
 	DBName   string `mapstructure:"dbname"`
 	SSLMode  string `mapstructure:"sslmode"`
+
+	// Connection Pool Settings
+	MaxOpenConns    int `mapstructure:"max_open_conns"`
+	MaxIdleConns    int `mapstructure:"max_idle_conns"`
+	ConnMaxLifetime int `mapstructure:"conn_max_lifetime"`  // in seconds
+	ConnMaxIdleTime int `mapstructure:"conn_max_idle_time"` // in seconds
 }
 
 func LoadConfig() (*Config, error) {
