@@ -27,8 +27,10 @@ func CreateAccessToken(userID uuid.UUID, jwtConfig config.JwtConfig) (string, er
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
-	return token.SignedString(jwtConfig.SecretKey)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	return token.SignedString([]byte(jwtConfig.SecretKey)) // Note: convert to []byte for HMAC (SigningMethodHS256)
+
 }
 
 func ParseToken(tokenString string, jwtConfig config.JwtConfig) (*Claims, error) {

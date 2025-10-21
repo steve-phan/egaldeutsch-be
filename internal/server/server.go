@@ -33,7 +33,7 @@ func NewServer(cfg *config.Config) *Server {
 	}
 
 	// Initialize user module
-	userModule := user.NewModule(db.DB)
+	userModule := user.NewModule(db.DB, cfg.Jwt)
 
 	// Auto-migrate models from all modules
 	modelsToMigrate := userModule.GetModelsForMigration()

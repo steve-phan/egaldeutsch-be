@@ -12,7 +12,7 @@ Content-Type: application/json
 
 {
 	"name": "Alice",
-	"role": "learner"
+	"role": "admin"
 }
 
 ### Get a user by id

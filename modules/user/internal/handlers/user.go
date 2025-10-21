@@ -7,6 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
+	"egaldeutsch-be/internal/auth"
+	"egaldeutsch-be/internal/config"
 	"egaldeutsch-be/modules/user/internal/models"
 	"egaldeutsch-be/modules/user/internal/services"
 )
@@ -14,11 +16,12 @@ import (
 // UserHandler handles HTTP requests for users
 type UserHandler struct {
 	userService *services.UserService
+	jwtCfg      config.JwtConfig
 }
 
 // NewUserHandler creates a new user handler
-func NewUserHandler(userService *services.UserService) *UserHandler {
-	return &UserHandler{userService: userService}
+func NewUserHandler(userService *services.UserService, jwtCfg config.JwtConfig) *UserHandler {
+	return &UserHandler{userService: userService, jwtCfg: jwtCfg}
 }
 
 // CreateUser handles POST /api/v1/users
@@ -36,7 +39,15 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, user)
+	// Generate JWT token
+	token, err := auth.CreateAccessToken(user.ID, h.jwtCfg)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to generate access token")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate access token"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"user": user, "token": token})
 }
 
 // GetUser handles GET /api/v1/users/:id

@@ -3,6 +3,7 @@ package user
 import (
 	"gorm.io/gorm"
 
+	"egaldeutsch-be/internal/config"
 	"egaldeutsch-be/modules/user/internal/handlers"
 	"egaldeutsch-be/modules/user/internal/models"
 	"egaldeutsch-be/modules/user/internal/repositories"
@@ -17,7 +18,7 @@ type Module struct {
 }
 
 // NewModule creates a new user module with all dependencies
-func NewModule(db *gorm.DB) *Module {
+func NewModule(db *gorm.DB, jwtCfg config.JwtConfig) *Module {
 	// Initialize repository
 	repo := repositories.NewUserRepository(db)
 
@@ -25,7 +26,7 @@ func NewModule(db *gorm.DB) *Module {
 	service := services.NewUserService(repo)
 
 	// Initialize handler
-	handler := handlers.NewUserHandler(service)
+	handler := handlers.NewUserHandler(service, jwtCfg)
 
 	return &Module{
 		Handler: handler,
