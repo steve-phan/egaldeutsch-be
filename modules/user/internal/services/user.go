@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 
 	usermodels "egaldeutsch-be/modules/user/internal/models"
 	"egaldeutsch-be/modules/user/internal/repositories"
@@ -30,7 +31,10 @@ func (s *UserService) CreateUser(req *usermodels.CreateUserRequest) (*usermodels
 	// Extract fields from request
 	name := req.Name
 	email := req.Email
-	password := req.Password
+	password, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
 	role := req.Role
 	if role == "" {
 		role = "user"
@@ -39,7 +43,7 @@ func (s *UserService) CreateUser(req *usermodels.CreateUserRequest) (*usermodels
 	user := &usermodels.User{
 		Name:     name,
 		Email:    email,
-		Password: password, //TODO: Hash passwords in production
+		Password: string(password),
 		Role:     models.UserRole(role),
 	}
 
@@ -126,8 +130,8 @@ func (s *UserService) AuthenticateUser(email, password string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	//TODO: Use hashed passwords in production
-	if user.Password != password {
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 		return "", errors.New("invalid credentials")
 	}
 
