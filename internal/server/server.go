@@ -62,15 +62,8 @@ func NewServer(cfg *config.Config) *Server {
 	// API routes
 	api := router.Group("/api/v1")
 	{
-		// User routes
-		users := api.Group("/users")
-		{
-			users.POST("", userModule.Handler.CreateUser)
-			users.GET("/:id", userModule.Handler.GetUser)
-			users.PUT("/:id", userModule.Handler.UpdateUser)
-			users.DELETE("/:id", userModule.Handler.DeleteUser)
-			users.GET("", userModule.Handler.ListUsers)
-		}
+		// Register module routes
+		userModule.RegisterRoutes(api)
 
 		// Article routes (TODO: Update to use services)
 		// api.GET("/articles", articleHandler.GetArticles)
