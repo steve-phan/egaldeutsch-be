@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Server   ServerConfig   `mapstructure:"server"`
 	Database DatabaseConfig `mapstructure:"database"`
+	Jwt      JwtConfig      `mapstructure:"jwt"`
 }
 
 type ServerConfig struct {
@@ -29,6 +30,13 @@ type DatabaseConfig struct {
 	MaxIdleConns    int `mapstructure:"max_idle_conns"`
 	ConnMaxLifetime int `mapstructure:"conn_max_lifetime"`  // in seconds
 	ConnMaxIdleTime int `mapstructure:"conn_max_idle_time"` // in seconds
+}
+
+type JwtConfig struct {
+	SecretKey                  string `mapstructure:"secret_key"`
+	Issuer                     string `mapstructure:"issuer"`
+	ExpirationHours            int    `mapstructure:"expiration_hours"`
+	RefreshTokenExpirationDays int    `mapstructure:"refresh_token_expiration_days"`
 }
 
 func LoadConfig() (*Config, error) {

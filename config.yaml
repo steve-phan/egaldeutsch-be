@@ -13,3 +13,8 @@ database:
   max_idle_conns: 10 # Keep some idle connections ready
   conn_max_lifetime: 300 # 5 minutes - refresh connections
   conn_max_idle_time: 60 # 1 minute - close idle connections
+jwt:
+  secret_key: your_secret_key_here
+  issuer: egaldeutsch
+  expiration_hours: 72
+  refresh_token_expiration_days: 7
