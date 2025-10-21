@@ -12,7 +12,8 @@ Content-Type: application/json
 
 {
 	"name": "Alice",
-	"role": "admin"
+	"email": "alice@example.com",
+	"password": "password123"
 }
 
 ### Get a user by id

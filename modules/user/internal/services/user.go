@@ -26,17 +26,21 @@ func NewUserService(repo *repositories.UserRepository) *UserService {
 }
 
 // CreateUser creates a new user with validation
-func (s *UserService) CreateUser(name, roleStr string) (*usermodels.User, error) {
-	// Validate role
-	role := models.UserRole(roleStr)
-	if !role.IsValid() {
-		return nil, ErrInvalidUserRole
+func (s *UserService) CreateUser(req *usermodels.CreateUserRequest) (*usermodels.User, error) {
+	// Extract fields from request
+	name := req.Name
+	email := req.Email
+	password := req.Password
+	role := req.Role
+	if role == "" {
+		role = "user"
 	}
 
-	// Create user
 	user := &usermodels.User{
-		Name: name,
-		Role: role,
+		Name:     name,
+		Email:    email,
+		Password: password, //TODO: Hash passwords in production
+		Role:     models.UserRole(role),
 	}
 
 	if err := s.repo.Create(user); err != nil {

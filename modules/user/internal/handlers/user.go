@@ -32,7 +32,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	user, err := h.userService.CreateUser(req.Name, req.Role)
+	user, err := h.userService.CreateUser(&req)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to create user")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
