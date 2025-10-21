@@ -1,7 +1,14 @@
-package auth
+package authmodule
 
-type Module struct{}
+import (
+	"egaldeutsch-be/internal/auth"
+	"egaldeutsch-be/modules/auth/internal/handlers"
+)
 
-func NewModule() *Module {
-	return &Module{}
+type Module struct {
+	Handler *handlers.AuthHandler
+}
+
+func NewModule(authService auth.AuthService, userAuth handlers.UserAuthenticator) *Module {
+	return &Module{Handler: handlers.NewAuthHandler(authService, userAuth)}
 }

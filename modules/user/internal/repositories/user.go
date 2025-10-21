@@ -41,6 +41,19 @@ func (r *UserRepository) GetByID(id string) (*usermodels.User, error) {
 	return &user, nil
 }
 
+// GetByEmail retrieves a user by email
+func (r *UserRepository) GetByEmail(email string) (*usermodels.User, error) {
+	var user usermodels.User
+	err := r.db.Where("email = ?", email).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrUserNotFound
+		}
+		return nil, err
+	}
+	return &user, nil
+}
+
 // Update updates an existing user
 func (r *UserRepository) Update(user *usermodels.User) error {
 	return r.db.Save(user).Error

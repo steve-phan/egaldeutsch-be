@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 )
 
 type Claims struct {
@@ -14,13 +13,13 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func CreateAccessToken(userID uuid.UUID, jwtConfig config.JwtConfig) (string, error) {
+func CreateAccessToken(userID string, jwtConfig config.JwtConfig) (string, error) {
 	now := time.Now()
 	expiresAt := now.Add(time.Duration(jwtConfig.ExpirationHours) * time.Hour)
 	claims := Claims{
-		UserId: userID.String(),
+		UserId: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:   userID.String(),
+			Subject:   userID,
 			Issuer:    jwtConfig.Issuer,
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(expiresAt),

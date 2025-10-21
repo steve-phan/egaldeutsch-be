@@ -114,3 +114,18 @@ func (s *UserService) GetUsersByRole(role models.UserRole) ([]usermodels.User, e
 
 	return s.repo.GetByRole(role)
 }
+
+// AuthenticateUser authenticates by email and password and returns the userId
+func (s *UserService) AuthenticateUser(email, password string) (string, error) {
+	user, err := s.repo.GetByEmail(email)
+
+	if err != nil {
+		return "", err
+	}
+	//TODO: Use hashed passwords in production
+	if user.Password != password {
+		return "", errors.New("invalid credentials")
+	}
+
+	return user.ID.String(), nil
+}

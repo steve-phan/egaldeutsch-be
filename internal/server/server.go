@@ -7,9 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
+	"egaldeutsch-be/internal/auth"
 	"egaldeutsch-be/internal/config"
 	"egaldeutsch-be/internal/database"
 	"egaldeutsch-be/internal/middleware"
+	authmodule "egaldeutsch-be/modules/auth"
 	"egaldeutsch-be/modules/user"
 )
 
@@ -32,8 +34,14 @@ func NewServer(cfg *config.Config) *Server {
 		logrus.Fatalf("Failed to connect to database: %v", err)
 	}
 
+	// Initialize auth service internally
+	authService := auth.NewService(cfg.Jwt)
+
 	// Initialize user module
 	userModule := user.NewModule(db.DB, cfg.Jwt)
+
+	// Initialize auth module
+	authModule := authmodule.NewModule(authService, userModule.Service) // need UserAuthenticator
 
 	// Auto-migrate models from all modules
 	modelsToMigrate := userModule.GetModelsForMigration()
@@ -64,6 +72,7 @@ func NewServer(cfg *config.Config) *Server {
 	{
 		// Register module routes
 		userModule.RegisterRoutes(api)
+		authModule.RegisterRoutes(api)
 
 		// Article routes (TODO: Update to use services)
 		// api.GET("/articles", articleHandler.GetArticles)

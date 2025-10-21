@@ -6,8 +6,8 @@ import "github.com/gin-gonic/gin"
 // The server should keep responsibility for creating the top-level API group
 // (for example: /api/v1) and pass it to modules so they can attach their
 // sub-routes (for example: /users).
-func (m *Module) RegisterRoutes(api *gin.RouterGroup) {
-	users := api.Group("/users")
+func (m *Module) RegisterRoutes(rg *gin.RouterGroup) {
+	users := rg.Group("/users")
 	{
 		users.POST("", m.Handler.CreateUser)
 		users.GET("/:id", m.Handler.GetUser)
