@@ -41,8 +41,8 @@ func NewServer(cfg *config.Config) *Server {
 	// Initialize user module
 	userModule := user.NewModule(db.DB, cfg.Jwt)
 
-	// Initialize auth module
-	authModule := authmodule.NewModule(authService, userModule.Service) // need UserAuthenticator
+	// Initialize auth module (pass unified user service)
+	authModule := authmodule.NewModule(authService, userModule.Service)
 
 	// Auto-migrate models from all modules
 	modelsToMigrate := append(userModule.GetModelsForMigration(), authmodule.GetModelsForMigration()...)

@@ -16,7 +16,8 @@ type AuthService interface {
 	RevokeAllRefreshTokens(userID string) error
 
 	// Password reset helpers
-	CreatePasswordResetForEmail(email string) error
+	// CreatePasswordResetForUser creates a single-use token for the given user ID and returns the plain token (to be emailed)
+	CreatePasswordResetForUser(userID string) (string, error)
 	VerifyPasswordResetToken(token string) (userID string, err error)
 }
 

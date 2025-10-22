@@ -95,5 +95,25 @@ func (s *service) CreatePasswordResetForEmail(email string) error {
 }
 
 func (s *service) VerifyPasswordResetToken(token string) (string, error) {
-	return "", errors.New("not implemented")
+	// Use repo to verify and mark token as used
+	tokenHash := hashToken(token)
+	userID, err := s.repo.VerifyAndMarkPasswordReset(tokenHash)
+	if err != nil {
+		return "", err
+	}
+	return userID, nil
+}
+
+func (s *service) CreatePasswordResetForUser(userID string) (string, error) {
+	// generate token
+	token, err := genRandomToken(32)
+	if err != nil {
+		return "", err
+	}
+	tokenHash := hashToken(token)
+	expiresAt := time.Now().Add(1 * time.Hour).Unix()
+	if err := s.repo.InsertPasswordReset(tokenHash, userID, expiresAt); err != nil {
+		return "", err
+	}
+	return token, nil
 }

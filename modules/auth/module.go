@@ -10,8 +10,8 @@ type Module struct {
 	Handler *handlers.AuthHandler
 }
 
-func NewModule(authService auth.AuthService, userAuth handlers.UserAuthenticator) *Module {
-	return &Module{Handler: handlers.NewAuthHandler(authService, userAuth)}
+func NewModule(authService auth.AuthService, userService handlers.UserService) *Module {
+	return &Module{Handler: handlers.NewAuthHandler(authService, userService)}
 }
 
 // GetModelsForMigration returns module models that should be auto-migrated.

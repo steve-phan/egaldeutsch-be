@@ -1,8 +1,15 @@
 package handlers
 
-// UserAuthenticator describes just what the auth module needs from the  user service.
-// Keep it minimal and return a primitive (string userId) to avoid importing user models.
-type UserAuthenticator interface {
+// UserService combines the minimal user-related operations required by the auth module.
+// Keep the surface small and return primitive types (string userId) to avoid importing
+// user domain models into the auth module.
+type UserService interface {
 	// AuthenticateUser verifies credentials and returns user Id (UUID string) if valid.
 	AuthenticateUser(email, password string) (string, error)
+
+	// UpdatePassword updates a user's password (the implementation should handle hashing).
+	UpdatePassword(userID string, newPassword string) error
+
+	// GetUserIDByEmail returns the user ID string for the provided email.
+	GetUserIDByEmail(email string) (string, error)
 }

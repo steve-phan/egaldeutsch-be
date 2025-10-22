@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
-	"time"
 )
 
 const (
@@ -23,8 +22,4 @@ func genRandomToken(n int) (string, error) {
 func hashToken(token string) string {
 	h := sha256.Sum256([]byte(token))
 	return hex.EncodeToString(h[:])
-}
-
-func refreshTokenExpiryDays(days int) time.Time {
-	return time.Now().Add(time.Duration(days) * 24 * time.Hour)
 }

@@ -137,3 +137,31 @@ func (s *UserService) AuthenticateUser(email, password string) (string, error) {
 
 	return user.ID.String(), nil
 }
+
+// GetByEmail retrieves a user by email (public wrapper)
+func (s *UserService) GetByEmail(email string) (*usermodels.User, error) {
+	return s.repo.GetByEmail(email)
+}
+
+// GetUserIDByEmail returns user ID (string) by email
+func (s *UserService) GetUserIDByEmail(email string) (string, error) {
+	u, err := s.repo.GetByEmail(email)
+	if err != nil {
+		return "", err
+	}
+	return u.ID.String(), nil
+}
+
+// UpdatePassword updates the user's password with a bcrypt hash
+func (s *UserService) UpdatePassword(userID string, newPassword string) error {
+	user, err := s.GetUserByID(userID)
+	if err != nil {
+		return err
+	}
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.Password = string(passwordHash)
+	return s.repo.Update(user)
+}
