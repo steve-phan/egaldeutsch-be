@@ -104,7 +104,14 @@ func (r *Repository) RevokeRefreshTokenByHash(hash string, replacedBy *string) e
 	if replacedBy != nil {
 		updates["replaced_by"] = *replacedBy
 	}
-	return r.db.Model(&models.RefreshToken{}).Where("token_hash = ?", hash).Updates(updates).Error
+	res := r.db.Model(&models.RefreshToken{}).Where("token_hash = ?", hash).Updates(updates)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return authpkg.ErrInvalidRefreshToken
+	}
+	return nil
 }
 
 func (r *Repository) RevokeAllForUser(userID string) error {

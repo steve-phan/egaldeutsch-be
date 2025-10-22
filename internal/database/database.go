@@ -2,11 +2,13 @@ package database
 
 import (
 	"fmt"
+	"io"
 	"time"
 
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	gormlogger "gorm.io/gorm/logger"
 
 	"egaldeutsch-be/internal/config"
 )
@@ -21,7 +23,20 @@ func NewDatabase(cfg config.DatabaseConfig) (*Database, error) {
 		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DBName, cfg.SSLMode,
 	)
 
-	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{})
+	// Configure GORM logger to write SQL logs via logrus at Info level.
+	// For now we enable Info logging; adjust or make configurable as needed.
+	writer := logrus.StandardLogger().Out
+	gormLog := gormlogger.New(
+		newLogrusWriter(writer),
+		gormlogger.Config{
+			SlowThreshold:             time.Second,
+			LogLevel:                  gormlogger.Info,
+			IgnoreRecordNotFoundError: true,
+			Colorful:                  false,
+		},
+	)
+
+	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{Logger: gormLog})
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database connection: %w", err)
 	}
@@ -40,4 +55,18 @@ func NewDatabase(cfg config.DatabaseConfig) (*Database, error) {
 	sqlDB.SetConnMaxIdleTime(1 * time.Minute) // Close idle connections after 1 minute
 
 	return &Database{db}, nil
+}
+
+// newLogrusWriter adapts an io.Writer (logrus.Out) to gorm's logger writer expectations.
+type logrusWriter struct {
+	w io.Writer
+}
+
+func newLogrusWriter(w io.Writer) *logrusWriter {
+	return &logrusWriter{w: w}
+}
+
+// Printf satisfies the logger writer interface used by gorm's logger.
+func (lw *logrusWriter) Printf(format string, args ...interface{}) {
+	logrus.Infof(format, args...)
 }

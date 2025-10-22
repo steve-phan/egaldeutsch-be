@@ -47,3 +47,23 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"access_token": token, "refresh_token": refresh})
 
 }
+
+// Logout revokes the provided refresh token. Clients should call this when logging out.
+func (h *AuthHandler) Logout(c *gin.Context) {
+	var req authModels.LogoutRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.authService.RevokeRefreshToken(req.RefreshToken); err != nil {
+		if err == auth.ErrInvalidRefreshToken {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid refresh token"}) //TODO:  treat as success to avoid token fishing?
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to revoke token"})
+		return
+	}
+
+	c.Status(http.StatusOK)
+}

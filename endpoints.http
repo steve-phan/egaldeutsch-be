@@ -22,7 +22,15 @@ Content-Type: application/json
 
 {
 	"email": "admin@example.com",
-	"password": "password12"
+	"password": "password123"
+}
+
+### Logout
+POST http://localhost:8080/api/v1/auth/logout
+Content-Type: application/json
+
+{
+  "refresh_token": "mnsU1w10-c4d3dnRJGoFmDzFkpJJWTd5JfZvPYXqogQgWALv7ni6aim65t6Ev8BZ_PBoL13zUnZN3J-el00IwUQ"
 }
 
 ### Get a user by id
