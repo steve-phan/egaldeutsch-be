@@ -67,3 +67,31 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 
 	c.Status(http.StatusOK)
 }
+
+// RefreshToken rotates a refresh token and returns a new access and refresh token.
+func (h *AuthHandler) RefreshToken(c *gin.Context) {
+	var req authModels.RefreshRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ip := c.ClientIP()
+	ua := c.Request.UserAgent()
+	access, newRefresh, err := h.authService.RefreshTokens(req.RefreshToken, ip, ua)
+	if err != nil {
+		if err == auth.ErrRefreshTokenReuse {
+			// revoke-all already performed by repo; return 401
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "refresh token reuse detected"})
+			return
+		}
+		if err == auth.ErrInvalidRefreshToken {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid refresh token"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to refresh tokens"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"access_token": access, "refresh_token": newRefresh})
+}

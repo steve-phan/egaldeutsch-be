@@ -33,6 +33,14 @@ Content-Type: application/json
   "refresh_token": "mnsU1w10-c4d3dnRJGoFmDzFkpJJWTd5JfZvPYXqogQgWALv7ni6aim65t6Ev8BZ_PBoL13zUnZN3J-el00IwUQ"
 }
 
+### Refresh
+POST http://localhost:8080/api/v1/auth/refresh
+Content-Type: application/json
+
+{
+	"refresh_token": "8NxCaGmlNmKmMmcfR4OIsVBMaAO6R-JoAcsYDgpO5kCTiKIpSYBnL6GQctRe4NqnU0FV3bdWtMkTnuBFwYI4sA"
+}
+
 ### Get a user by id
 GET http://localhost:8080/api/v1/users/1
 Accept: application/json
