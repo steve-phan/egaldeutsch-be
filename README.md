@@ -228,8 +228,4 @@ docker run -p 8080:8080 \
 3. Update documentation as needed
 4. Use meaningful commit messages
 
-## License
-
-[Add your license here]
-
 # egaldeutsch-be
