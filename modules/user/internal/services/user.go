@@ -165,3 +165,17 @@ func (s *UserService) UpdatePassword(userID string, newPassword string) error {
 	user.Password = string(passwordHash)
 	return s.repo.Update(user)
 }
+
+// GetUserViewByID returns a minimal user representation for external modules.
+func (s *UserService) GetUserViewByID(userID string) (map[string]interface{}, error) {
+	u, err := s.GetUserByID(userID)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]interface{}{
+		"id":    u.ID.String(),
+		"name":  u.Name,
+		"email": u.Email,
+		"role":  u.Role,
+	}, nil
+}

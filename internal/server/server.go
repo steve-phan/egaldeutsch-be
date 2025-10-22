@@ -71,9 +71,9 @@ func NewServer(cfg *config.Config) *Server {
 	// API routes
 	api := router.Group("/api/v1")
 	{
-		// Register module routes
+		// Register module routes (module handles its protected routes)
 		userModule.RegisterRoutes(api)
-		authModule.RegisterRoutes(api)
+		authModule.RegisterRoutes(api, cfg.Jwt)
 
 		// Article routes (TODO: Update to use services)
 		// api.GET("/articles", articleHandler.GetArticles)

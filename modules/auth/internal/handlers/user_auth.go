@@ -12,4 +12,7 @@ type UserService interface {
 
 	// GetUserIDByEmail returns the user ID string for the provided email.
 	GetUserIDByEmail(email string) (string, error)
+
+	// GetUserViewByID returns a small user view (id, name, email, role) to avoid importing full user models.
+	GetUserViewByID(userID string) (map[string]interface{}, error)
 }

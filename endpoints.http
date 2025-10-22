@@ -41,6 +41,11 @@ Content-Type: application/json
 	"refresh_token": "8NxCaGmlNmKmMmcfR4OIsVBMaAO6R-JoAcsYDgpO5kCTiKIpSYBnL6GQctRe4NqnU0FV3bdWtMkTnuBFwYI4sA"
 }
 
+### Get current user
+GET http://localhost:8080/api/v1/auth/me
+Authorization: Bearer <access_token>
+Accept: application/json
+
 ### Get a user by id
 GET http://localhost:8080/api/v1/users/1
 Accept: application/json

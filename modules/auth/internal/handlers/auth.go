@@ -95,3 +95,38 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"access_token": access, "refresh_token": newRefresh})
 }
+
+// GetCurrentUser returns the user info for the currently authenticated user.
+func (h *AuthHandler) GetCurrentUser(c *gin.Context) {
+	// Expect Authorization: Bearer <token>
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing authorization header"})
+		return
+	}
+	// Basic parsing
+	var token string
+	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+		token = authHeader[7:]
+	} else {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid authorization header"})
+		return
+	}
+
+	claims, err := h.authService.ParseToken(token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+		return
+	}
+
+	// Lookup user view
+	userView, err := h.userService.GetUserViewByID(claims.UserId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"user": userView})
+}
+
+// (duplicate stub removed)
