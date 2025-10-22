@@ -34,8 +34,9 @@ func NewServer(cfg *config.Config) *Server {
 		logrus.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	// Initialize auth service internally
-	authService := auth.NewService(cfg.Jwt)
+	// Initialize auth module repository and service (module owns models & repo)
+	authRepo := authmodule.NewRepository(db.DB)
+	authService := auth.NewService(cfg.Jwt, authRepo)
 
 	// Initialize user module
 	userModule := user.NewModule(db.DB, cfg.Jwt)
@@ -44,7 +45,7 @@ func NewServer(cfg *config.Config) *Server {
 	authModule := authmodule.NewModule(authService, userModule.Service) // need UserAuthenticator
 
 	// Auto-migrate models from all modules
-	modelsToMigrate := userModule.GetModelsForMigration()
+	modelsToMigrate := append(userModule.GetModelsForMigration(), authmodule.GetModelsForMigration()...)
 	// Add other modules here as they are implemented
 
 	if err := db.AutoMigrate(modelsToMigrate...); err != nil {
