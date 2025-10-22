@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"egaldeutsch-be/internal/auth"
-	"egaldeutsch-be/modules/auth/internal/models"
+	authModels "egaldeutsch-be/modules/auth/internal/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,7 +21,7 @@ func NewAuthHandler(authService auth.AuthService, userService UserService) *Auth
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
-	var req models.LoginRequest
+	var req authModels.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
