@@ -8,7 +8,9 @@ type AuthService interface {
 	// Refresh token lifecycle
 	// CreateRefreshToken returns the plain (unhashed) refresh token to be given to the client
 	CreateRefreshToken(userID string, ip string, userAgent string) (string, error)
-	// RefreshTokens rotates the provided refresh token and returns a new access + refresh token
+	// RefreshTokens rotates the provided refresh token and returns a new access + refresh token.
+	// The service will resolve the user's role from the repository as part of rotation, so
+	// callers only need to present the old refresh token and client metadata.
 	RefreshTokens(oldRefreshToken string, ip string, userAgent string) (newAccess string, newRefresh string, err error)
 	// Revoke a single refresh token (by presenting the plain token)
 	RevokeRefreshToken(refreshToken string) error
@@ -27,9 +29,9 @@ type AuthRepo interface {
 	// Insert a new refresh token record
 	InsertRefreshToken(tokenHash string, userID string, expiresAt int64, ip *string, userAgent *string) error
 	// RotateRefreshToken atomically rotates the provided oldHash into a newHash.
-	// It returns the associated userID (string) and a boolean indicating whether reuse
-	// was detected (old token was already revoked and replaced_by was set).
-	RotateRefreshToken(oldHash, newHash string, newExpiresAt int64, ip *string, userAgent *string) (userID string, reused bool, err error)
+	// It returns the associated userID, the user's role (as stored in users table),
+	// and a boolean indicating whether reuse was detected (old token was already revoked and replaced_by was set).
+	RotateRefreshToken(oldHash, newHash string, newExpiresAt int64, ip *string, userAgent *string) (userID string, role string, reused bool, err error)
 	RevokeRefreshTokenByHash(hash string, replacedBy *string) error
 	RevokeAllForUser(userID string) error
 

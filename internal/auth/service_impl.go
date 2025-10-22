@@ -22,9 +22,12 @@ type service struct {
 func NewService(cfg config.JwtConfig, repo AuthRepo) AuthService {
 	return &service{cfg: cfg, repo: repo}
 }
-
 func (s *service) CreateAccessToken(userID string) (string, error) {
-	return CreateAccessToken(userID, s.cfg)
+	// service-level CreateAccessToken no longer resolves role; callers that
+	// need a role claim should call the lower-level CreateAccessToken helper
+	// directly with a role value. This keeps the service simple and avoids
+	// hidden dependencies.
+	return CreateAccessToken(userID, "", s.cfg)
 }
 
 func (s *service) ParseToken(token string) (*Claims, error) {
@@ -60,7 +63,7 @@ func (s *service) RefreshTokens(oldRefreshToken string, ip string, userAgent str
 	newHash := hashToken(newToken)
 
 	expiresAtUnix := time.Now().Add(time.Duration(s.cfg.RefreshTokenExpirationDays*24) * time.Hour).Unix()
-	userID, reused, err := s.repo.RotateRefreshToken(oldHash, newHash, expiresAtUnix, &ip, &userAgent)
+	userID, role, reused, err := s.repo.RotateRefreshToken(oldHash, newHash, expiresAtUnix, &ip, &userAgent)
 	if err != nil {
 		return "", "", err
 	}
@@ -68,8 +71,7 @@ func (s *service) RefreshTokens(oldRefreshToken string, ip string, userAgent str
 		return "", "", ErrRefreshTokenReuse
 	}
 
-	// create access token
-	access, err := s.CreateAccessToken(userID)
+	access, err := CreateAccessToken(userID, role, s.cfg)
 	if err != nil {
 		return "", "", err
 	}

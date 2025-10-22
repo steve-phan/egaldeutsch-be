@@ -40,35 +40,49 @@ func (r *Repository) InsertRefreshToken(tokenHash string, userID string, expires
 
 // RotateRefreshToken creates a new refresh token row and marks the old one revoked.
 // It returns the user id as string and whether reuse was detected.
-func (r *Repository) RotateRefreshToken(oldHash, newHash string, newExpiresAt int64, ip *string, userAgent *string) (string, bool, error) {
+func (r *Repository) RotateRefreshToken(oldHash, newHash string, newExpiresAt int64, ip *string, userAgent *string) (string, string, bool, error) {
 	// Use transaction and FOR UPDATE semantics
 	tx := r.db.Begin()
 	if tx.Error != nil {
-		return "", false, tx.Error
+		return "", "", false, tx.Error
 	}
 
 	var old models.RefreshToken
 	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("token_hash = ?", oldHash).First(&old).Error; err != nil {
 		tx.Rollback()
 		if err == gorm.ErrRecordNotFound {
-			return "", false, authpkg.ErrInvalidRefreshToken
+			return "", "", false, authpkg.ErrInvalidRefreshToken
 		}
-		return "", false, err
+		return "", "", false, err
 	}
 
-	// detect reuse
-	if old.Revoked && old.ReplacedBy != nil {
-		// revoke all for user
-		if err := tx.Model(&models.RefreshToken{}).Where("user_id = ?", old.UserID).Updates(map[string]interface{}{"revoked": true}).Error; err != nil {
+	uid := old.UserID
+
+	// If token was already revoked -> reuse detected. Revoke all tokens for user and return reused=true
+	if old.Revoked {
+		if err := tx.Model(&models.RefreshToken{}).Where("user_id = ?", uid).Updates(map[string]interface{}{"revoked": true}).Error; err != nil {
 			tx.Rollback()
-			return "", false, err
+			return "", "", false, err
 		}
-		tx.Commit()
-		return old.UserID.String(), true, nil
+
+		// fetch role from users table inside the same tx
+		var role string
+		if err := tx.Raw("SELECT role FROM users WHERE id = ?", uid).Scan(&role).Error; err != nil {
+			tx.Rollback()
+			if err == gorm.ErrRecordNotFound {
+				return "", "", false, authpkg.ErrInvalidRefreshToken
+			}
+			return "", "", false, err
+		}
+
+		if err := tx.Commit().Error; err != nil {
+			return "", "", false, err
+		}
+
+		return uid.String(), role, true, nil
 	}
 
 	// create new token
-	uid := old.UserID
 	newRT := &models.RefreshToken{
 		UserID:    uid,
 		TokenHash: newHash,
@@ -83,20 +97,30 @@ func (r *Repository) RotateRefreshToken(oldHash, newHash string, newExpiresAt in
 
 	if err := tx.Create(newRT).Error; err != nil {
 		tx.Rollback()
-		return "", false, err
+		return "", "", false, err
 	}
 
 	// mark old revoked and set replaced_by
 	if err := tx.Model(&models.RefreshToken{}).Where("token_hash = ?", oldHash).Updates(map[string]interface{}{"revoked": true, "replaced_by": newHash}).Error; err != nil {
 		tx.Rollback()
-		return "", false, err
+		return "", "", false, err
+	}
+
+	// fetch role from users table inside the same tx
+	var role string
+	if err := tx.Raw("SELECT role FROM users WHERE id = ?", uid).Scan(&role).Error; err != nil {
+		tx.Rollback()
+		if err == gorm.ErrRecordNotFound {
+			return "", "", false, authpkg.ErrInvalidRefreshToken
+		}
+		return "", "", false, err
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		return "", false, err
+		return "", "", false, err
 	}
 
-	return uid.String(), false, nil
+	return uid.String(), role, false, nil
 }
 
 func (r *Repository) RevokeRefreshTokenByHash(hash string, replacedBy *string) error {

@@ -41,8 +41,8 @@ func NewServer(cfg *config.Config) *Server {
 	// Initialize user module
 	userModule := user.NewModule(db.DB, cfg.Jwt)
 
-	// Initialize auth module (pass unified user service)
-	authModule := authmodule.NewModule(authService, userModule.Service)
+	// Initialize auth module (pass unified user service and jwt config)
+	authModule := authmodule.NewModule(authService, userModule.Service, cfg.Jwt)
 
 	// Auto-migrate models from all modules
 	modelsToMigrate := append(userModule.GetModelsForMigration(), authmodule.GetModelsForMigration()...)
@@ -72,7 +72,7 @@ func NewServer(cfg *config.Config) *Server {
 	api := router.Group("/api/v1")
 	{
 		// Register module routes (module handles its protected routes)
-		userModule.RegisterRoutes(api)
+		userModule.RegisterRoutes(api, cfg.Jwt)
 		authModule.RegisterRoutes(api, cfg.Jwt)
 
 		// Article routes (TODO: Update to use services)

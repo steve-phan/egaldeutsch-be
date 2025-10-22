@@ -123,19 +123,19 @@ func (s *UserService) GetUsersByRole(role sharedmodels.UserRole) ([]usermodels.U
 	return s.repo.GetByRole(role)
 }
 
-// AuthenticateUser authenticates by email and password and returns the userId
-func (s *UserService) AuthenticateUser(email, password string) (string, error) {
+// AuthenticateUser authenticates by email and password and returns the userId and role
+func (s *UserService) AuthenticateUser(email, password string) (string, sharedmodels.UserRole, error) {
 	user, err := s.repo.GetByEmail(email)
 
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		return "", errors.New("invalid credentials")
+		return "", "", errors.New("invalid credentials")
 	}
 
-	return user.ID.String(), nil
+	return user.ID.String(), user.Role, nil
 }
 
 // GetByEmail retrieves a user by email (public wrapper)

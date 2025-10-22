@@ -6,6 +6,7 @@ import (
 
 	"egaldeutsch-be/internal/auth"
 	"egaldeutsch-be/internal/config"
+	"egaldeutsch-be/pkg/models"
 
 	"github.com/gin-gonic/gin"
 )
@@ -26,6 +27,10 @@ func AuthMiddleware(jwtCfg config.JwtConfig) gin.HandlerFunc {
 			return
 		}
 		c.Set("user_id", claims.UserId)
+		// also set role from token claims (if present)
+		if claims.Role != "" {
+			c.Set("user_role", models.UserRole(claims.Role))
+		}
 		c.Next()
 	}
 }

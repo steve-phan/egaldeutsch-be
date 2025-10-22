@@ -1,14 +1,14 @@
 package handlers
 
 import (
-	"egaldeutsch-be/pkg/models"
+	sharedmodels "egaldeutsch-be/pkg/models"
 )
 
 // UserService combines the minimal user-related operations required by the auth module.
 // Keep the surface small and return a typed UserView for cross-module communication.
 type UserService interface {
-	// AuthenticateUser verifies credentials and returns user Id (UUID string) if valid.
-	AuthenticateUser(email, password string) (string, error)
+	// AuthenticateUser verifies credentials and returns user Id (UUID string) and role if valid.
+	AuthenticateUser(email, password string) (string, sharedmodels.UserRole, error)
 
 	// UpdatePassword updates a user's password (the implementation should handle hashing).
 	UpdatePassword(userID string, newPassword string) error
@@ -17,5 +17,5 @@ type UserService interface {
 	GetUserIDByEmail(email string) (string, error)
 
 	// GetUserViewByID returns a small user view (id, name, email, role).
-	GetUserViewByID(userID string) (*models.UserView, error)
+	GetUserViewByID(userID string) (*sharedmodels.UserView, error)
 }

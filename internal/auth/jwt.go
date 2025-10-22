@@ -10,14 +10,16 @@ import (
 
 type Claims struct {
 	UserId string `json:"user_id"`
+	Role   string `json:"role"`
 	jwt.RegisteredClaims
 }
 
-func CreateAccessToken(userID string, jwtConfig config.JwtConfig) (string, error) {
+func CreateAccessToken(userID string, role string, jwtConfig config.JwtConfig) (string, error) {
 	now := time.Now()
 	expiresAt := now.Add(time.Duration(jwtConfig.ExpirationHours) * time.Hour)
 	claims := Claims{
 		UserId: userID,
+		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   userID,
 			Issuer:    jwtConfig.Issuer,

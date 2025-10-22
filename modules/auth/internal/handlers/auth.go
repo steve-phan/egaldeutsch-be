@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"egaldeutsch-be/internal/auth"
+	"egaldeutsch-be/internal/config"
 	authModels "egaldeutsch-be/modules/auth/internal/models"
 	"net/http"
 
@@ -11,12 +12,14 @@ import (
 type AuthHandler struct {
 	authService auth.AuthService
 	userService UserService
+	jwtCfg      config.JwtConfig
 }
 
-func NewAuthHandler(authService auth.AuthService, userService UserService) *AuthHandler {
+func NewAuthHandler(authService auth.AuthService, userService UserService, jwtCfg config.JwtConfig) *AuthHandler {
 	return &AuthHandler{
 		authService: authService,
 		userService: userService,
+		jwtCfg:      jwtCfg,
 	}
 }
 
@@ -26,12 +29,13 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	userId, err := h.userService.AuthenticateUser(req.Email, req.Password)
+	userId, role, err := h.userService.AuthenticateUser(req.Email, req.Password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 		return
 	}
-	token, err := h.authService.CreateAccessToken(userId)
+	// include user's role in the access token so middleware can derive role
+	token, err := auth.CreateAccessToken(userId, string(role), h.jwtCfg)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create token"})
 		return
@@ -92,7 +96,6 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to refresh tokens"})
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"access_token": access, "refresh_token": newRefresh})
 }
 
