@@ -1,8 +1,11 @@
 package handlers
 
+import (
+	"egaldeutsch-be/pkg/models"
+)
+
 // UserService combines the minimal user-related operations required by the auth module.
-// Keep the surface small and return primitive types (string userId) to avoid importing
-// user domain models into the auth module.
+// Keep the surface small and return a typed UserView for cross-module communication.
 type UserService interface {
 	// AuthenticateUser verifies credentials and returns user Id (UUID string) if valid.
 	AuthenticateUser(email, password string) (string, error)
@@ -13,6 +16,6 @@ type UserService interface {
 	// GetUserIDByEmail returns the user ID string for the provided email.
 	GetUserIDByEmail(email string) (string, error)
 
-	// GetUserViewByID returns a small user view (id, name, email, role) to avoid importing full user models.
-	GetUserViewByID(userID string) (map[string]interface{}, error)
+	// GetUserViewByID returns a small user view (id, name, email, role).
+	GetUserViewByID(userID string) (*models.UserView, error)
 }

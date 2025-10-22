@@ -128,5 +128,3 @@ func (h *AuthHandler) GetCurrentUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"user": userView})
 }
-
-// (duplicate stub removed)

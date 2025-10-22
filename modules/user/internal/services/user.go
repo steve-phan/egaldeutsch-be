@@ -8,7 +8,7 @@ import (
 
 	usermodels "egaldeutsch-be/modules/user/internal/models"
 	"egaldeutsch-be/modules/user/internal/repositories"
-	"egaldeutsch-be/pkg/models"
+	sharedmodels "egaldeutsch-be/pkg/models"
 )
 
 var (
@@ -44,7 +44,7 @@ func (s *UserService) CreateUser(req *usermodels.CreateUserRequest) (*usermodels
 		Name:     name,
 		Email:    email,
 		Password: string(password),
-		Role:     models.UserRole(role),
+		Role:     sharedmodels.UserRole(role),
 	}
 
 	if err := s.repo.Create(user); err != nil {
@@ -77,7 +77,7 @@ func (s *UserService) UpdateUser(id string, updates *usermodels.UpdateUserReques
 		user.Name = updates.Name
 	}
 	if updates.Role != "" {
-		role := models.UserRole(updates.Role)
+		role := sharedmodels.UserRole(updates.Role)
 		if !role.IsValid() {
 			return nil, ErrInvalidUserRole
 		}
@@ -115,7 +115,7 @@ func (s *UserService) ListUsers(page, perPage int) ([]usermodels.User, int64, er
 }
 
 // GetUsersByRole retrieves users by role
-func (s *UserService) GetUsersByRole(role models.UserRole) ([]usermodels.User, error) {
+func (s *UserService) GetUsersByRole(role sharedmodels.UserRole) ([]usermodels.User, error) {
 	if !role.IsValid() {
 		return nil, ErrInvalidUserRole
 	}
@@ -167,15 +167,15 @@ func (s *UserService) UpdatePassword(userID string, newPassword string) error {
 }
 
 // GetUserViewByID returns a minimal user representation for external modules.
-func (s *UserService) GetUserViewByID(userID string) (map[string]interface{}, error) {
+func (s *UserService) GetUserViewByID(userID string) (*sharedmodels.UserView, error) {
 	u, err := s.GetUserByID(userID)
 	if err != nil {
 		return nil, err
 	}
-	return map[string]interface{}{
-		"id":    u.ID.String(),
-		"name":  u.Name,
-		"email": u.Email,
-		"role":  u.Role,
+	return &sharedmodels.UserView{
+		ID:    u.ID.String(),
+		Name:  u.Name,
+		Email: u.Email,
+		Role:  u.Role,
 	}, nil
 }
