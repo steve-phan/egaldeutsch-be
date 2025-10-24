@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type RateLimitConfig struct {
+type rateLimitConfig struct {
 	RequestsPerMinute int
 }
 
@@ -17,7 +17,13 @@ type rateLimiter struct {
 	requests map[string]map[string][]time.Time // Endpoint -> Client IP -> Requests
 }
 
-func RateLimitMiddleware(config RateLimitConfig) gin.HandlerFunc {
+func RateLimit(limit int) gin.HandlerFunc {
+	return rateLimitMiddleware(rateLimitConfig{
+		RequestsPerMinute: limit,
+	})
+}
+
+func rateLimitMiddleware(config rateLimitConfig) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		clientIP := c.ClientIP()
