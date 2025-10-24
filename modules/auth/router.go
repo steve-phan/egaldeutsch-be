@@ -25,7 +25,9 @@ func (m *Module) RegisterRoutes(rg *gin.RouterGroup, jwtCfg config.JwtConfig) {
 	agProtected := rg.Group("/auth")
 	agProtected.Use(middleware.AuthMiddleware(jwtCfg))
 	{
-		agProtected.GET("/me", m.Handler.GetCurrentUser)
+		agProtected.GET("/me", middleware.RateLimitMiddleware(middleware.RateLimitConfig{
+			RequestsPerMinute: 10,
+		}), m.Handler.GetCurrentUser)
 	}
 
 }

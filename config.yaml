@@ -6,7 +6,7 @@ database:
   port: 5432
   user: postgres
   password: postgres
-  dbname: egaldeutsch
+  dbname: egaldeutsch-go
   sslmode: disable
   # PostgreSQL Connection Pool Settings (Production Optimized)
   max_open_conns: 25 # ~4x CPU cores, adjust based on load

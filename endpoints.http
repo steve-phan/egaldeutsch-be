@@ -30,7 +30,7 @@ POST http://localhost:8080/api/v1/auth/logout
 Content-Type: application/json
 
 {
-  "refresh_token": "mnsU1w10-c4d3dnRJGoFmDzFkpJJWTd5JfZvPYXqogQgWALv7ni6aim65t6Ev8BZ_PBoL13zUnZN3J-el00IwUQ"
+  "refresh_token": "SjV8G0uesPwk9akHJnjksUdv6eMV2P-THmaLPMqJoBZ2xKooCkujZBe56ma-9I5dgUMydpXwIk342AqEog_aOA"
 }
 
 ### Refresh
@@ -38,20 +38,22 @@ POST http://localhost:8080/api/v1/auth/refresh
 Content-Type: application/json
 
 {
-	"refresh_token": "8NxCaGmlNmKmMmcfR4OIsVBMaAO6R-JoAcsYDgpO5kCTiKIpSYBnL6GQctRe4NqnU0FV3bdWtMkTnuBFwYI4sA"
+	"refresh_token": "s0GpayjSOuPYsckwOWH3Le_4CPizwqX2N_4p91s7FKLZfbFdRVLfKfbB78P7mNZn4TC59Cb35Bk0va6An4apwA"
 }
 
 ### Get current user
 GET http://localhost:8080/api/v1/auth/me
-Authorization: Bearer <access_token>
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMjZiZGE3NWMtMzgwYS00YmFkLTlmNjgtNjI3YmU4NjM3MGMxIiwicm9sZSI6InVzZXIiLCJpc3MiOiJlZ2FsZGV1dHNjaCIsInN1YiI6IjI2YmRhNzVjLTM4MGEtNGJhZC05ZjY4LTYyN2JlODYzNzBjMSIsImV4cCI6MTc2MTU2NTYzMCwiaWF0IjoxNzYxMzA2NDMwfQ.XUXKWPivZ0UxlP3N81e8sSNLnYTo6t1sUmxOW8IShmM
 Accept: application/json
 
 ### Get a user by id
-GET http://localhost:8080/api/v1/users/1
+GET http://localhost:8080/api/v1/users/c8919634-f96b-48ef-b68d-5fcb3dedd846
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMGM5NjM5NjMtN2U1ZC00ZjdiLThjNjItMjBmMDg3N2Q4NTQ4Iiwicm9sZSI6InVzZXIiLCJpc3MiOiJlZ2FsZGV1dHNjaCIsInN1YiI6IjBjOTYzOTYzLTdlNWQtNGY3Yi04YzYyLTIwZjA4NzdkODU0OCIsImV4cCI6MTc2MTM4NzkwMCwiaWF0IjoxNzYxMTI4NzAwfQ.4XpINbuoSRvoPYrVihTjwPO_kXw2FJ_Z_E8aoMPpxcw
 Accept: application/json
 
 ### Update a user
-PUT http://localhost:8080/api/v1/users/1
+PUT http://localhost:8080/api/v1/users/c8919634-f96b-48ef-b68d-5fcb3dedd846
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMGM5NjM5NjMtN2U1ZC00ZjdiLThjNjItMjBmMDg3N2Q4NTQ4IiwiaXNzIjoiZWdhbGRldXRzY2giLCJzdWIiOiIwYzk2Mzk2My03ZTVkLTRmN2ItOGM2Mi0yMGYwODc3ZDg1NDgiLCJleHAiOjE3NjEzODU3OTgsImlhdCI6MTc2MTEyNjU5OH0.TjcFuhD9X7mjrf36Tg66kGTiqHAB2sqSm0pZgNmsrhU
 Content-Type: application/json
 
 {
