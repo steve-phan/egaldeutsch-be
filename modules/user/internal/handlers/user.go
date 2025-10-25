@@ -40,7 +40,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 	}
 
 	// Generate JWT token (include role so token contains user's role)
-	token, err := auth.CreateAccessToken(user.ID.String(), string(user.Role), h.jwtCfg)
+	token, err := auth.CreateAccessTokenFromStrings(user.ID.String(), string(user.Role), h.jwtCfg)
 	if err != nil {
 		logrus.WithError(err).Error("Failed to generate access token")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate access token"})

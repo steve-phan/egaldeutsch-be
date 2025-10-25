@@ -2,13 +2,11 @@ package middleware
 
 import (
 	"testing"
-	"time"
 )
 
 func TestRateLimiter_Allow(t *testing.T) {
-	limiter := &rateLimiter{
-		requests: make(map[string]map[string][]time.Time),
-	}
+	limiter := NewRateLimiter()
+	defer limiter.Close()
 
 	// Make 10 requests with the same client IP and route.
 	for range 10 {
@@ -25,9 +23,8 @@ func TestRateLimiter_Allow(t *testing.T) {
 }
 
 func TestRateLimiter_WithDifferentEndpoints(t *testing.T) {
-	limiter := &rateLimiter{
-		requests: make(map[string]map[string][]time.Time),
-	}
+	limiter := NewRateLimiter()
+	defer limiter.Close()
 
 	// Make 10 requests with the same client IP and different routes.
 	for range 10 {
@@ -43,9 +40,8 @@ func TestRateLimiter_WithDifferentEndpoints(t *testing.T) {
 }
 
 func TestRateLimiter_WithDifferentIPs(t *testing.T) {
-	limiter := &rateLimiter{
-		requests: make(map[string]map[string][]time.Time),
-	}
+	limiter := NewRateLimiter()
+	defer limiter.Close()
 
 	// Make 10 requests with different client IPs and the same route.
 	for range 10 {
@@ -64,35 +60,20 @@ func TestRateLimiter_WithDifferentIPs(t *testing.T) {
 }
 
 func TestRateLimiter_Allo_TimeWindow(t *testing.T) {
-	limiter := &rateLimiter{
-		requests: make(map[string]map[string][]time.Time),
-	}
-
-	originalTime := time.Now()
+	limiter := NewRateLimiter()
+	defer limiter.Close()
 
 	requestsPerMinute := 5
 
-	testTimes := []time.Time{
-		originalTime.Add(-30 * time.Second), // 30 seconds ago
-		originalTime.Add(-20 * time.Second), // 20 seconds ago
-		originalTime.Add(-10 * time.Second), // 10 seconds ago
-
-	}
-
-	// Manually add old requests
-	limiter.requests["/test"] = map[string][]time.Time{
-		"127.0.0.1": testTimes,
-	}
-
-	for range requestsPerMinute - len(testTimes) {
+	// Make requests up to the limit
+	for range requestsPerMinute {
 		if !limiter.Allow("127.0.0.1", "/test", requestsPerMinute) {
 			t.Fatalf("expected true got false")
 		}
 	}
 
-	// It should not allow new request
+	// Next request should be denied
 	if limiter.Allow("127.0.0.1", "/test", requestsPerMinute) {
 		t.Fatalf("expected false got true")
 	}
-
 }

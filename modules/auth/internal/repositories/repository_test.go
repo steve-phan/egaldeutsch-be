@@ -199,8 +199,8 @@ func TestLoginThenRefreshFlow(t *testing.T) {
 	}
 
 	// create access token using internal auth CreateAccessToken with a minimal jwt config
-	jwtCfg := config.JwtConfig{SecretKey: "testsecret", Issuer: "egaldeutsch", ExpirationHours: 24, RefreshTokenExpirationDays: 30}
-	token, err := auth.CreateAccessToken(userID, role, jwtCfg)
+	jwtCfg := config.JwtConfig{SecretKey: "this-is-a-very-secure-secret-key-with-32-plus-characters", Issuer: "egaldeutsch", ExpirationHours: 24, RefreshTokenExpirationDays: 30}
+	token, err := auth.CreateAccessTokenFromStrings(userID, role, jwtCfg)
 	if err != nil {
 		t.Fatalf("failed to create access token: %v", err)
 	}

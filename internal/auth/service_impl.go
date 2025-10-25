@@ -27,7 +27,7 @@ func (s *service) CreateAccessToken(userID string) (string, error) {
 	// need a role claim should call the lower-level CreateAccessToken helper
 	// directly with a role value. This keeps the service simple and avoids
 	// hidden dependencies.
-	return CreateAccessToken(userID, "", s.cfg)
+	return CreateAccessTokenFromStrings(userID, "", s.cfg)
 }
 
 func (s *service) ParseToken(token string) (*Claims, error) {
@@ -71,7 +71,7 @@ func (s *service) RefreshTokens(oldRefreshToken string, ip string, userAgent str
 		return "", "", ErrRefreshTokenReuse
 	}
 
-	access, err := CreateAccessToken(userID, role, s.cfg)
+	access, err := CreateAccessTokenFromStrings(userID, role, s.cfg)
 	if err != nil {
 		return "", "", err
 	}

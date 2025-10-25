@@ -35,9 +35,9 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 	// include user's role in the access token so middleware can derive role
-	token, err := auth.CreateAccessToken(userId, string(role), h.jwtCfg)
+	token, err := auth.CreateAccessTokenFromStrings(userId, string(role), h.jwtCfg)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create token"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create token: " + err.Error()})
 		return
 	}
 	// create refresh token

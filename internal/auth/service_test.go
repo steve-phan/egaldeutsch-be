@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"egaldeutsch-be/internal/config"
+
+	"github.com/google/uuid"
 )
 
 // fakeRepo implements AuthRepo for testing
@@ -35,11 +37,17 @@ func (f *fakeRepo) VerifyAndMarkPasswordReset(tokenHash string) (string, error) 
 
 func TestCreateRefreshTokenAndRotateSuccess(t *testing.T) {
 	repo := &fakeRepo{}
-	cfg := config.JwtConfig{SecretKey: "test", Issuer: "eg", ExpirationHours: 1, RefreshTokenExpirationDays: 30}
+	cfg := config.JwtConfig{
+		SecretKey:                  "this-is-a-very-secure-secret-key-with-32-plus-characters",
+		Issuer:                     "eg",
+		ExpirationHours:            1,
+		RefreshTokenExpirationDays: 30,
+	}
 	svc := NewService(cfg, repo)
 
 	// CreateRefreshToken should call repo.InsertRefreshToken
-	plain, err := svc.CreateRefreshToken("user-1", "1.2.3.4", "ua")
+	userID := uuid.New().String() // Use proper UUID
+	plain, err := svc.CreateRefreshToken(userID, "1.2.3.4", "ua")
 	if err != nil {
 		t.Fatalf("CreateRefreshToken failed: %v", err)
 	}
@@ -48,7 +56,7 @@ func TestCreateRefreshTokenAndRotateSuccess(t *testing.T) {
 	}
 
 	// Rotate scenario: repo returns userID+role
-	repo.nextRotateUserID = "user-1"
+	repo.nextRotateUserID = userID // Use the same valid UUID
 	repo.nextRotateRole = "learner"
 	repo.nextRotateReused = false
 
@@ -63,7 +71,12 @@ func TestCreateRefreshTokenAndRotateSuccess(t *testing.T) {
 
 func TestRefreshTokens_ReuseDetected(t *testing.T) {
 	repo := &fakeRepo{rotateErr: nil, nextRotateReused: true}
-	cfg := config.JwtConfig{SecretKey: "test", Issuer: "eg", ExpirationHours: 1, RefreshTokenExpirationDays: 30}
+	cfg := config.JwtConfig{
+		SecretKey:                  "this-is-a-very-secure-secret-key-with-32-plus-characters",
+		Issuer:                     "eg",
+		ExpirationHours:            1,
+		RefreshTokenExpirationDays: 30,
+	}
 	svc := NewService(cfg, repo)
 
 	_, _, err := svc.RefreshTokens("oldtoken", "1.2.3.4", "ua")

@@ -17,8 +17,13 @@ func main() {
 
 	fmt.Printf("Starting server at %s:%s\n", cfg.Server.Host, cfg.Server.Port)
 
-	// Create and start server
-	srv := server.NewServer(cfg)
+	// Create server (now returns error following Go philosophy)
+	srv, err := server.NewServer(cfg)
+	if err != nil {
+		log.Fatalf("Failed to create server: %v", err)
+	}
+
+	// Start server
 	if err := srv.Start(); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}

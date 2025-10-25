@@ -21,69 +21,94 @@ type Server struct {
 	db     *database.Database
 }
 
-func NewServer(cfg *config.Config) *Server {
-	// Set Gin mode
-	gin.SetMode(gin.ReleaseMode)
-	if cfg.Server.Host == "localhost" {
-		gin.SetMode(gin.DebugMode)
+// NewServer creates a new server instance with all dependencies properly initialized.
+// It follows Go philosophy by returning errors instead of calling fatal, allowing
+// callers to decide how to handle failures.
+func NewServer(cfg *config.Config) (*Server, error) {
+	if cfg == nil {
+		return nil, fmt.Errorf("config cannot be nil")
 	}
 
-	// Initialize database
+	// Configure Gin mode based on environment
+	configureGinMode(cfg.Server.Host)
+
+	// Initialize database connection
 	db, err := database.NewDatabase(cfg.Database)
 	if err != nil {
-		logrus.Fatalf("Failed to connect to database: %v", err)
+		return nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
 
-	// Initialize auth module repository and service (module owns models & repo)
+	// Initialize modules with dependency injection
 	authRepo := authmodule.NewRepository(db.DB)
 	authService := auth.NewService(cfg.Jwt, authRepo)
-
-	// Initialize user module
 	userModule := user.NewModule(db.DB, cfg.Jwt)
-
-	// Initialize auth module (pass unified user service and jwt config)
 	authModule := authmodule.NewModule(authService, userModule.Service, cfg.Jwt)
 
-	// Auto-migrate models from all modules
-	modelsToMigrate := append(userModule.GetModelsForMigration(), authmodule.GetModelsForMigration()...)
-	// Add other modules here as they are implemented
-
-	if err := db.AutoMigrate(modelsToMigrate...); err != nil {
-		logrus.Fatalf("Failed to migrate database: %v", err)
+	// Run database migrations
+	if err := runMigrations(db, userModule, authModule); err != nil {
+		return nil, fmt.Errorf("failed to run migrations: %w", err)
 	}
 
-	// Create router
-	router := gin.New()
-
-	// Add middleware
-	router.Use(middleware.Logger())
-	router.Use(middleware.CORS())
-	router.Use(gin.Recovery())
-
-	// Health check endpoint
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":  "healthy",
-			"service": "egaldeutsch-be",
-		})
-	})
-
-	// API routes
-	api := router.Group("/api/v1")
-	{
-		// Register module routes (module handles its protected routes)
-		userModule.RegisterRoutes(api, cfg.Jwt)
-		authModule.RegisterRoutes(api, cfg.Jwt)
-
-		// Article routes (TODO: Update to use services)
-		// api.GET("/articles", articleHandler.GetArticles)
-	}
+	// Setup HTTP router
+	router := createRouter(cfg.Jwt, userModule, authModule)
 
 	return &Server{
 		config: cfg,
 		router: router,
 		db:     db,
+	}, nil
+}
+
+// configureGinMode sets Gin mode based on the host configuration.
+func configureGinMode(host string) {
+	gin.SetMode(gin.ReleaseMode)
+	if host == "localhost" {
+		gin.SetMode(gin.DebugMode)
 	}
+}
+
+// runMigrations performs database migrations for all modules.
+func runMigrations(db *database.Database, userModule *user.Module, authModule *authmodule.Module) error {
+	modelsToMigrate := append(
+		userModule.GetModelsForMigration(),
+		authmodule.GetModelsForMigration()...,
+	)
+
+	if err := db.AutoMigrate(modelsToMigrate...); err != nil {
+		return fmt.Errorf("database migration failed: %w", err)
+	}
+
+	return nil
+}
+
+// createRouter sets up the HTTP router with all routes and middleware.
+func createRouter(jwtCfg config.JwtConfig, userModule *user.Module, authModule *authmodule.Module) *gin.Engine {
+	router := gin.New()
+
+	// Add middleware in correct order
+	router.Use(middleware.Logger())
+	router.Use(middleware.CORS())
+	router.Use(gin.Recovery())
+
+	// Health check endpoint
+	router.GET("/health", healthCheckHandler)
+
+	// API routes
+	api := router.Group("/api/v1")
+	{
+		userModule.RegisterRoutes(api, jwtCfg)
+		authModule.RegisterRoutes(api, jwtCfg)
+	}
+
+	return router
+}
+
+// healthCheckHandler provides a simple health check endpoint.
+func healthCheckHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "healthy",
+		"service": "egaldeutsch-be",
+	})
 }
 
 func (s *Server) Start() error {
