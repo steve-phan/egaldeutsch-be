@@ -12,6 +12,7 @@ import (
 	"egaldeutsch-be/internal/database"
 	"egaldeutsch-be/internal/middleware"
 	authmodule "egaldeutsch-be/modules/auth"
+	"egaldeutsch-be/modules/quiz"
 	"egaldeutsch-be/modules/user"
 )
 
@@ -43,6 +44,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	authService := auth.NewService(cfg.Jwt, authRepo)
 	userModule := user.NewModule(db.DB, cfg.Jwt)
 	authModule := authmodule.NewModule(authService, userModule.Service, cfg.Jwt)
+	quizModule := quiz.NewModule(db.DB)
 
 	// Run database migrations
 	if err := runMigrations(db, userModule, authModule); err != nil {
@@ -50,7 +52,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	}
 
 	// Setup HTTP router
-	router := createRouter(cfg.Jwt, userModule, authModule)
+	router := createRouter(cfg.Jwt, userModule, authModule, quizModule)
 
 	return &Server{
 		config: cfg,
@@ -82,7 +84,7 @@ func runMigrations(db *database.Database, userModule *user.Module, authModule *a
 }
 
 // createRouter sets up the HTTP router with all routes and middleware.
-func createRouter(jwtCfg config.JwtConfig, userModule *user.Module, authModule *authmodule.Module) *gin.Engine {
+func createRouter(jwtCfg config.JwtConfig, userModule *user.Module, authModule *authmodule.Module, quizModule *quiz.Module) *gin.Engine {
 	router := gin.New()
 
 	// Add middleware in correct order
@@ -98,6 +100,8 @@ func createRouter(jwtCfg config.JwtConfig, userModule *user.Module, authModule *
 	{
 		userModule.RegisterRoutes(api, jwtCfg)
 		authModule.RegisterRoutes(api, jwtCfg)
+		quizModule.RegisterRoutes(api)
+
 	}
 
 	return router
