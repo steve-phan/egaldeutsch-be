@@ -14,9 +14,6 @@ func NewQuestionService(repo *repositories.QuestionRepository) *QuestionService 
 }
 
 func (s *QuestionService) CreateQuestion(question models.CreateQuestionDTO) error {
-
-	// How do we pronounce this symbol?
-	// How is this pronounced?
 	q := &models.Question{
 		QuestionText:  question.QuestionText,
 		Options:       question.Options,

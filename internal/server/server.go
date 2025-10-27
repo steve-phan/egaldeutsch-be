@@ -47,7 +47,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	quizModule := quiz.NewModule(db.DB)
 
 	// Run database migrations
-	if err := runMigrations(db, userModule, authModule); err != nil {
+	if err := runMigrations(db, userModule, authModule, quizModule); err != nil {
 		return nil, fmt.Errorf("failed to run migrations: %w", err)
 	}
 
@@ -70,11 +70,12 @@ func configureGinMode(host string) {
 }
 
 // runMigrations performs database migrations for all modules.
-func runMigrations(db *database.Database, userModule *user.Module, authModule *authmodule.Module) error {
-	modelsToMigrate := append(
-		userModule.GetModelsForMigration(),
-		authmodule.GetModelsForMigration()...,
-	)
+func runMigrations(db *database.Database, userModule *user.Module, authModule *authmodule.Module, quizModule *quiz.Module) error {
+	// Start with the first module's models
+	modelsToMigrate := userModule.GetModelsForMigration()
+	// Append the other modules' models by unpacking them one at a time
+	modelsToMigrate = append(modelsToMigrate, authModule.GetModelsForMigration()...)
+	modelsToMigrate = append(modelsToMigrate, quizModule.GetModelsForMigration()...)
 
 	if err := db.AutoMigrate(modelsToMigrate...); err != nil {
 		return fmt.Errorf("database migration failed: %w", err)

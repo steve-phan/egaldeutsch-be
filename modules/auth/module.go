@@ -16,6 +16,6 @@ func NewModule(authService auth.AuthService, userService handlers.UserService, j
 }
 
 // GetModelsForMigration returns module models that should be auto-migrated.
-func GetModelsForMigration() []interface{} {
+func (m *Module) GetModelsForMigration() []interface{} {
 	return []interface{}{&models.RefreshToken{}, &models.PasswordReset{}}
 }

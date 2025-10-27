@@ -2,6 +2,7 @@ package quiz
 
 import (
 	"egaldeutsch-be/modules/quiz/internal/hanlers"
+	"egaldeutsch-be/modules/quiz/internal/models"
 	"egaldeutsch-be/modules/quiz/internal/repositories"
 	"egaldeutsch-be/modules/quiz/internal/services"
 
@@ -23,4 +24,10 @@ func NewModule(db *gorm.DB) *Module {
 	handler := hanlers.NewQuestionHandler(service)
 
 	return &Module{handler: handler, service: service, repo: repo}
+}
+
+func (m *Module) GetModelsForMigration() []interface{} {
+	return []interface{}{
+		&models.Question{},
+	}
 }

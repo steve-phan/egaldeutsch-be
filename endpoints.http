@@ -64,3 +64,20 @@ Content-Type: application/json
 ### Delete a user
 DELETE http://localhost:8080/api/v1/users/1
 Accept: application/json
+
+### Create a new question
+POST http://localhost:8080/api/v1/quiz/questions
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMjZiZGE3NWMtMzgwYS00YmFkLTlmNjgtNjI3YmU4NjM3MGMxIiwicm9sZSI6InVzZXIiLCJpc3MiOiJlZ2FsZGV1dHNjaCIsInN1YiI6IjI2YmRhNzVjLTM4MGEtNGJhZC05ZjY4LTYyN2JlODYzNzBjMSIsImV4cCI6MTc2MTgwMTcxMSwiaWF0IjoxNzYxNTQyNTExfQ.-kHwijQFG1Qa3T9FB1OxJWrPUIcudd0NneUEqIEDb9A
+
+{
+  "question_text": "What is the capital of Germany?",
+  "options": ["Berlin", "Munich", "Hamburg", "Frankfurt"],
+  "correct_option": 0,
+  "category": "Geography"
+}
+
+### Get all questions
+GET http://localhost:8080/api/v1/quiz/questions
+Accept: application/json
+Authorization: Bearer <your_token>
