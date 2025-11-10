@@ -11,6 +11,7 @@ import (
 	"egaldeutsch-be/internal/config"
 	"egaldeutsch-be/internal/database"
 	"egaldeutsch-be/internal/middleware"
+	"egaldeutsch-be/internal/redis"
 	authmodule "egaldeutsch-be/modules/auth"
 	"egaldeutsch-be/modules/quiz"
 	"egaldeutsch-be/modules/user"
@@ -38,6 +39,12 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
+
+	redisClient, err := redis.NewRedisClient(cfg.Redis)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize Redis client: %w", err)
+	}
+	fmt.Printf("Redis client initialized successfully : %+v\n", redisClient)
 
 	// Initialize modules with dependency injection
 	authRepo := authmodule.NewRepository(db.DB)

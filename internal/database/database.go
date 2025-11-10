@@ -91,7 +91,7 @@ func createGormLogger() gormlogger.Interface {
 		newLogrusWriter(logrus.StandardLogger().Out),
 		gormlogger.Config{
 			SlowThreshold:             time.Second,
-			LogLevel:                  gormlogger.Info,
+			LogLevel:                  gormlogger.Warn,
 			IgnoreRecordNotFoundError: true,
 			Colorful:                  false,
 		},
