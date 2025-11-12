@@ -4,10 +4,10 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/coder/websocket"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
-	"nhooyr.io/websocket"
 
 	"egaldeutsch-be/internal/config"
 	"egaldeutsch-be/modules/websocket/internal/hub"
@@ -15,8 +15,8 @@ import (
 )
 
 type WSHandler struct {
-	hub     *hub.Hub
-	jwtCfg  config.JwtConfig
+	hub    *hub.Hub
+	jwtCfg config.JwtConfig
 }
 
 func NewWSHandler(hub *hub.Hub, jwtCfg config.JwtConfig) *WSHandler {
@@ -203,8 +203,8 @@ func (h *WSHandler) CreateRoom(c *gin.Context) {
 	// For now, rooms are ephemeral (exist only while users are connected)
 
 	logrus.WithFields(logrus.Fields{
-		"room_id":   roomID,
-		"room_name": req.Name,
+		"room_id":    roomID,
+		"room_name":  req.Name,
 		"created_by": userID,
 	}).Info("Chat room created")
 

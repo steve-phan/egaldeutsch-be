@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
+	"github.com/coder/websocket"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
-	"nhooyr.io/websocket"
 )
 
 const (

@@ -15,12 +15,14 @@ import (
 	authmodule "egaldeutsch-be/modules/auth"
 	"egaldeutsch-be/modules/quiz"
 	"egaldeutsch-be/modules/user"
+	websocketmodule "egaldeutsch-be/modules/websocket"
 )
 
 type Server struct {
 	config *config.Config
 	router *gin.Engine
 	db     *database.Database
+	redis  *redis.RedisClient
 }
 
 // NewServer creates a new server instance with all dependencies properly initialized.
@@ -52,19 +54,21 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	userModule := user.NewModule(db.DB, cfg.Jwt)
 	authModule := authmodule.NewModule(authService, userModule.Service, cfg.Jwt)
 	quizModule := quiz.NewModule(db.DB)
+	wsModule := websocketmodule.NewModule(redisClient)
 
 	// Run database migrations
-	if err := runMigrations(db, userModule, authModule, quizModule); err != nil {
+	if err := runMigrations(db, userModule, authModule, quizModule, wsModule); err != nil {
 		return nil, fmt.Errorf("failed to run migrations: %w", err)
 	}
 
 	// Setup HTTP router
-	router := createRouter(cfg.Jwt, userModule, authModule, quizModule)
+	router := createRouter(cfg.Jwt, userModule, authModule, quizModule, wsModule)
 
 	return &Server{
 		config: cfg,
 		router: router,
 		db:     db,
+		redis:  redisClient,
 	}, nil
 }
 
@@ -77,12 +81,13 @@ func configureGinMode(host string) {
 }
 
 // runMigrations performs database migrations for all modules.
-func runMigrations(db *database.Database, userModule *user.Module, authModule *authmodule.Module, quizModule *quiz.Module) error {
+func runMigrations(db *database.Database, userModule *user.Module, authModule *authmodule.Module, quizModule *quiz.Module, wsModule *websocketmodule.Module) error {
 	// Start with the first module's models
 	modelsToMigrate := userModule.GetModelsForMigration()
 	// Append the other modules' models by unpacking them one at a time
 	modelsToMigrate = append(modelsToMigrate, authModule.GetModelsForMigration()...)
 	modelsToMigrate = append(modelsToMigrate, quizModule.GetModelsForMigration()...)
+	modelsToMigrate = append(modelsToMigrate, wsModule.GetModelsForMigration()...)
 
 	if err := db.AutoMigrate(modelsToMigrate...); err != nil {
 		return fmt.Errorf("database migration failed: %w", err)
@@ -92,7 +97,7 @@ func runMigrations(db *database.Database, userModule *user.Module, authModule *a
 }
 
 // createRouter sets up the HTTP router with all routes and middleware.
-func createRouter(jwtCfg config.JwtConfig, userModule *user.Module, authModule *authmodule.Module, quizModule *quiz.Module) *gin.Engine {
+func createRouter(jwtCfg config.JwtConfig, userModule *user.Module, authModule *authmodule.Module, quizModule *quiz.Module, wsModule *websocketmodule.Module) *gin.Engine {
 	router := gin.New()
 
 	// Add middleware in correct order
@@ -109,7 +114,7 @@ func createRouter(jwtCfg config.JwtConfig, userModule *user.Module, authModule *
 		userModule.RegisterRoutes(api, jwtCfg)
 		authModule.RegisterRoutes(api, jwtCfg)
 		quizModule.RegisterRoutes(api)
-
+		wsModule.RegisterRoutes(api, jwtCfg)
 	}
 
 	return router
