@@ -43,7 +43,7 @@ Content-Type: application/json
 
 ### Get current user
 GET http://localhost:8080/api/v1/auth/me
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMjZiZGE3NWMtMzgwYS00YmFkLTlmNjgtNjI3YmU4NjM3MGMxIiwicm9sZSI6InVzZXIiLCJpc3MiOiJlZ2FsZGV1dHNjaCIsInN1YiI6IjI2YmRhNzVjLTM4MGEtNGJhZC05ZjY4LTYyN2JlODYzNzBjMSIsImV4cCI6MTc2MTU2NTYzMCwiaWF0IjoxNzYxMzA2NDMwfQ.XUXKWPivZ0UxlP3N81e8sSNLnYTo6t1sUmxOW8IShmM
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMjZiZGE3NWMtMzgwYS00YmFkLTlmNjgtNjI3YmU4NjM3MGMxIiwicm9sZSI6InVzZXIiLCJpc3MiOiJlZ2FsZGV1dHNjaCIsInN1YiI6IjI2YmRhNzVjLTM4MGEtNGJhZC05ZjY4LTYyN2JlODYzNzBjMSIsImV4cCI6MTc2MzE4MjIzNCwiaWF0IjoxNzYyOTIzMDM0fQ.N9w3dJZ6IoIruAcJSFZT7XTbYs8cWgvr4uqDNEC-K6Q
 Accept: application/json
 
 ### Get a user by id
@@ -68,7 +68,7 @@ Accept: application/json
 ### Create a new question
 POST http://localhost:8080/api/v1/quiz/questions
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMjZiZGE3NWMtMzgwYS00YmFkLTlmNjgtNjI3YmU4NjM3MGMxIiwicm9sZSI6InVzZXIiLCJpc3MiOiJlZ2FsZGV1dHNjaCIsInN1YiI6IjI2YmRhNzVjLTM4MGEtNGJhZC05ZjY4LTYyN2JlODYzNzBjMSIsImV4cCI6MTc2MTgwMTcxMSwiaWF0IjoxNzYxNTQyNTExfQ.-kHwijQFG1Qa3T9FB1OxJWrPUIcudd0NneUEqIEDb9A
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMjZiZGE3NWMtMzgwYS00YmFkLTlmNjgtNjI3YmU4NjM3MGMxIiwicm9sZSI6InVzZXIiLCJpc3MiOiJlZ2FsZGV1dHNjaCIsInN1YiI6IjI2YmRhNzVjLTM4MGEtNGJhZC05ZjY4LTYyN2JlODYzNzBjMSIsImV4cCI6MTc2MzE4MjIzNCwiaWF0IjoxNzYyOTIzMDM0fQ.N9w3dJZ6IoIruAcJSFZT7XTbYs8cWgvr4uqDNEC-K6Q
 
 {
   "question_text": "What is the capital of Germany?",
@@ -80,4 +80,43 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMjZiZ
 ### Get all questions
 GET http://localhost:8080/api/v1/quiz/questions
 Accept: application/json
-Authorization: Bearer <your_token>
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMjZiZGE3NWMtMzgwYS00YmFkLTlmNjgtNjI3YmU4NjM3MGMxIiwicm9sZSI6InVzZXIiLCJpc3MiOiJlZ2FsZGV1dHNjaCIsInN1YiI6IjI2YmRhNzVjLTM4MGEtNGJhZC05ZjY4LTYyN2JlODYzNzBjMSIsImV4cCI6MTc2MzE4MjIzNCwiaWF0IjoxNzYyOTIzMDM0fQ.N9w3dJZ6IoIruAcJSFZT7XTbYs8cWgvr4uqDNEC-K6Q
+
+### WebSocket Chat Endpoints
+
+### Get chat room history
+GET http://localhost:8080/api/v1/ws/chat/general/history?limit=50
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMjZiZGE3NWMtMzgwYS00YmFkLTlmNjgtNjI3YmU4NjM3MGMxIiwicm9sZSI6InVzZXIiLCJpc3MiOiJlZ2FsZGV1dHNjaCIsInN1YiI6IjI2YmRhNzVjLTM4MGEtNGJhZC05ZjY4LTYyN2JlODYzNzBjMSIsImV4cCI6MTc2MzE4MjIzNCwiaWF0IjoxNzYyOTIzMDM0fQ.N9w3dJZ6IoIruAcJSFZT7XTbYs8cWgvr4uqDNEC-K6Q
+
+### Get room information
+GET http://localhost:8080/api/v1/ws/chat/general/info
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMjZiZGE3NWMtMzgwYS00YmFkLTlmNjgtNjI3YmU4NjM3MGMxIiwicm9sZSI6InVzZXIiLCJpc3MiOiJlZ2FsZGV1dHNjaCIsInN1YiI6IjI2YmRhNzVjLTM4MGEtNGJhZC05ZjY4LTYyN2JlODYzNzBjMSIsImV4cCI6MTc2MzE4MjIzNCwiaWF0IjoxNzYyOTIzMDM0fQ.N9w3dJZ6IoIruAcJSFZT7XTbYs8cWgvr4uqDNEC-K6Q
+
+### List available chat rooms
+GET http://localhost:8080/api/v1/ws/rooms
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMjZiZGE3NWMtMzgwYS00YmFkLTlmNjgtNjI3YmU4NjM3MGMxIiwicm9sZSI6InVzZXIiLCJpc3MiOiJlZ2FsZGV1dHNjaCIsInN1YiI6IjI2YmRhNzVjLTM4MGEtNGJhZC05ZjY4LTYyN2JlODYzNzBjMSIsImV4cCI6MTc2MzE4MjIzNCwiaWF0IjoxNzYyOTIzMDM0fQ.N9w3dJZ6IoIruAcJSFZT7XTbYs8cWgvr4uqDNEC-K6Q
+
+### Create a new chat room
+POST http://localhost:8080/api/v1/ws/rooms
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMjZiZGE3NWMtMzgwYS00YmFkLTlmNjgtNjI3YmU4NjM3MGMxIiwicm9sZSI6InVzZXIiLCJpc3MiOiJlZ2FsZGV1dHNjaCIsInN1YiI6IjI2YmRhNzVjLTM4MGEtNGJhZC05ZjY4LTYyN2JlODYzNzBjMSIsImV4cCI6MTc2MzE4MjIzNCwiaWF0IjoxNzYyOTIzMDM0fQ.N9w3dJZ6IoIruAcJSFZT7XTbYs8cWgvr4uqDNEC-K6Q
+
+{
+  "name": "German Beginners",
+  "description": "Chat room for German language beginners",
+  "max_participants": 50
+}
+
+### WebSocket Connection Notes
+# To test WebSocket connections, use a WebSocket client like:
+# wscat -c "ws://localhost:8080/api/v1/ws/chat/general" -H "Authorization: Bearer <your-jwt-token>"
+#
+# Example message format:
+# {
+#   "type": "chat_message",
+#   "content": "Hello everyone!",
+#   "room_id": "general"
+# }

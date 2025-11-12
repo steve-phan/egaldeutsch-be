@@ -18,3 +18,10 @@ jwt:
   issuer: egaldeutsch
   expiration_hours: 72
   refresh_token_expiration_days: 7
+redis:
+  host: localhost
+  port: 6379
+  password: "" # empty for local development
+  db: 0 # default database
+  # Chat session settings
+  message_ttl_hours: 24 # How long to keep messages in Redis before they expire

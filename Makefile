@@ -35,10 +35,10 @@ docker-stop: ## Stop Docker Compose services
 
 # Database migration commands (requires migrate tool)
 migrate-up: ## Run database migrations up
-	migrate -path migrations -database "postgres://postgres:postgres@localhost:5432/egaldeutsch?sslmode=disable" up
+	migrate -path migrations -database "postgres://postgres:postgres@localhost:5432/egaldeutsch-go?sslmode=disable" up
 
 migrate-down: ## Run database migrations down
-	migrate -path migrations -database "postgres://postgres:postgres@localhost:5432/egaldeutsch?sslmode=disable" down
+	migrate -path migrations -database "postgres://postgres:postgres@localhost:5432/egaldeutsch-go?sslmode=disable" down
 
 migrate-create: ## Create a new migration (usage: make migrate-create name=migration_name)
 	migrate create -ext sql -dir migrations -seq $(name)
