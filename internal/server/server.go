@@ -54,7 +54,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	userModule := user.NewModule(db.DB, cfg.Jwt)
 	authModule := authmodule.NewModule(authService, userModule.Service, cfg.Jwt)
 	quizModule := quiz.NewModule(db.DB)
-	wsModule := websocketmodule.NewModule(redisClient)
+	wsModule := websocketmodule.NewModule(db.DB, redisClient)
 
 	// Run database migrations
 	if err := runMigrations(db, userModule, authModule, quizModule, wsModule); err != nil {

@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 
 	"egaldeutsch-be/internal/config"
 	"egaldeutsch-be/modules/websocket/internal/hub"
@@ -17,12 +18,14 @@ import (
 type WSHandler struct {
 	hub    *hub.Hub
 	jwtCfg config.JwtConfig
+	db     *gorm.DB
 }
 
-func NewWSHandler(hub *hub.Hub, jwtCfg config.JwtConfig) *WSHandler {
+func NewWSHandler(hub *hub.Hub, jwtCfg config.JwtConfig, db *gorm.DB) *WSHandler {
 	return &WSHandler{
 		hub:    hub,
 		jwtCfg: jwtCfg,
+		db:     db,
 	}
 }
 
@@ -199,14 +202,18 @@ func (h *WSHandler) CreateRoom(c *gin.Context) {
 		IsActive:    true,
 	}
 
-	// TODO: Save room to database if you want persistent rooms
-	// For now, rooms are ephemeral (exist only while users are connected)
+	// Save room to database
+	if err := h.db.Create(room).Error; err != nil {
+		logrus.WithError(err).Error("Failed to create room in database")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create room"})
+		return
+	}
 
 	logrus.WithFields(logrus.Fields{
 		"room_id":    roomID,
 		"room_name":  req.Name,
 		"created_by": userID,
-	}).Info("Chat room created")
+	}).Info("Chat room created and saved to database")
 
 	c.JSON(http.StatusCreated, room)
 }
@@ -226,9 +233,14 @@ func (h *WSHandler) ListRooms(c *gin.Context) {
 		return
 	}
 
-	// For now, return empty list since rooms are ephemeral
-	// TODO: Implement room persistence if needed
-	rooms := []models.Room{}
+	// Query active rooms from database using GORM
+	var rooms []models.Room
+	result := h.db.Where("is_active = ?", true).Order("created_at DESC").Find(&rooms)
+	if result.Error != nil {
+		logrus.WithError(result.Error).Error("Failed to query rooms")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch rooms"})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"rooms": rooms,

@@ -1,15 +1,18 @@
--- Add password column to users in a safe way:
--- 1) add the column (nullable)
--- 2) backfill existing rows with a random placeholder (gen_random_uuid())
--- 3) set the column to NOT NULL
+-- Add password column to users table if it doesn't exist
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_name = 'users' AND column_name = 'password') THEN
+        -- 1) add the column (nullable)
+        ALTER TABLE users ADD COLUMN password varchar(255);
 
-ALTER TABLE users ADD COLUMN password varchar(255);
+        -- 2) backfill existing rows with a random placeholder
+        UPDATE users
+        SET password = gen_random_uuid()::text
+        WHERE password IS NULL;
 
--- Backfill existing rows with a non-guessable placeholder so we can enforce NOT NULL
-UPDATE users
-SET password = gen_random_uuid()::text
-WHERE password IS NULL;
-
--- Now enforce NOT NULL constraint
-ALTER TABLE users
-ALTER COLUMN password SET NOT NULL;
+        -- 3) enforce NOT NULL constraint
+        ALTER TABLE users
+        ALTER COLUMN password SET NOT NULL;
+    END IF;
+END $$;

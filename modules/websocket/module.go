@@ -4,8 +4,10 @@ import (
 	"context"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 
 	"egaldeutsch-be/internal/config"
+	"egaldeutsch-be/internal/middleware"
 	"egaldeutsch-be/internal/redis"
 	"egaldeutsch-be/modules/websocket/internal/handlers"
 	"egaldeutsch-be/modules/websocket/internal/hub"
@@ -14,9 +16,10 @@ import (
 type Module struct {
 	hub     *hub.Hub
 	handler *handlers.WSHandler
+	db      *gorm.DB
 }
 
-func NewModule(redisClient *redis.RedisClient) *Module {
+func NewModule(db *gorm.DB, redisClient *redis.RedisClient) *Module {
 	// Create hub with Redis client
 	h := hub.NewHub(redisClient)
 
@@ -24,20 +27,22 @@ func NewModule(redisClient *redis.RedisClient) *Module {
 	go h.Run(context.Background())
 
 	// Create handler with hub
-	handler := handlers.NewWSHandler(h, config.JwtConfig{}) // TODO: Pass JWT config
+	handler := handlers.NewWSHandler(h, config.JwtConfig{}, db) // TODO: Pass JWT config
 
 	return &Module{
 		hub:     h,
 		handler: handler,
+		db:      db,
 	}
 }
 
 // RegisterRoutes registers WebSocket routes
 func (m *Module) RegisterRoutes(rg *gin.RouterGroup, jwtCfg config.JwtConfig) {
-	// Update handler with JWT config
-	m.handler = handlers.NewWSHandler(m.hub, jwtCfg)
+	// Update handler with JWT config and database
+	m.handler = handlers.NewWSHandler(m.hub, jwtCfg, m.db)
 
 	ws := rg.Group("/ws")
+	ws.Use(middleware.AuthMiddleware(jwtCfg)) // Apply JWT authentication middleware
 	{
 		// Protected routes - require authentication
 		ws.GET("/chat/:room_id", m.handler.HandleConnection)

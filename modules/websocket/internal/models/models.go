@@ -38,6 +38,11 @@ type ChatMessage struct {
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
 
+// TableName specifies the table name for the ChatMessage model
+func (ChatMessage) TableName() string {
+	return "chat_messages"
+}
+
 // RoomInfo represents room information
 type RoomInfo struct {
 	RoomID    string    `json:"room_id"`
@@ -55,6 +60,11 @@ type Room struct {
 	CreatedAt   time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
 	IsActive    bool      `json:"is_active" db:"is_active"`
+}
+
+// TableName specifies the table name for the Room model
+func (Room) TableName() string {
+	return "chat_rooms"
 }
 
 // CreateRoomRequest represents the request to create a room
